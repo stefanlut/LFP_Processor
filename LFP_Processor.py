@@ -1,7 +1,6 @@
 import sys
 
 import matplotlib
-from pylab import *
 from scipy import signal
 import numpy as np
 import scipy.io as sio
@@ -41,14 +40,15 @@ class Window(QtWidgets.QDialog):
         pushplot_widget.clicked.connect(lambda: self.plot(self.load_LFP_data(),dropdown_widget.currentIndex(),t1_widget.text(),t2_widget.text()))
         dropdown_widget = QtWidgets.QComboBox()
         dropdown_widget.addItems(['Delta','Theta','Alpha','Beta','Gamma'])
+        dropdown_widget.setPlaceholderText("Choose Bandpass Region Here")
         t1_widget = QtWidgets.QLineEdit()
         t2_widget = QtWidgets.QLineEdit()
         t1_widget.setPlaceholderText("Enter t1 of interval [t1, t2] as a decimal")
         t2_widget.setPlaceholderText("Enter t2 of interval [t1, t2] as a decimal")
         for w in widgets:
             layout.addWidget(w)
-        layout.addWidget(dropdown_widget)
         layout.addWidget(pushplot_widget)
+        layout.addWidget(dropdown_widget)
         layout.addWidget(t1_widget)
         layout.addWidget(t2_widget)
         # layout.addWidget(pushselect_widget)
@@ -108,12 +108,11 @@ class Window(QtWidgets.QDialog):
         dt = t[1] - t[0]                     # Define the sampling interval,
         Fs = 1/dt                       # Define sampling rate
         fNQ = Fs/ 2                     # ... and Nyquist frequency.
-        #Wn = [80, 120];                      # Set the passband [80-120] Hz,
         n = 100;                             # ... and filter order,
-        b = signal.firwin(n, Wn, nyq=fNQ, pass_zero=False, window='hamming')
+        b = signal.firwin(n, Wn, nyq=fNQ, pass_zero=False, window='hamming') #calculate filter coefficients
         Vhi = signal.filtfilt(b, 1, LFP)    # ... and apply it to the data.
         X = signal.hilbert(Vhi)
-        phi = angle(X)     # Compute phase of low-freq signal
+        phi = np.angle(X)     # Compute phase of low-freq signal
         amp = abs(X)       # Compute amplitude of high-freq signal
         # clearing old figure
         self.figure.clear()
@@ -124,9 +123,11 @@ class Window(QtWidgets.QDialog):
         ax3 = self.figure.add_subplot(313)
         ax3.set_xlabel("Time (s)")
         # plot data
-        ax1.plot(t[t1:t2],LFP[t1:t2])
+        line1 = ax1.plot(t[t1:t2],LFP[t1:t2])
+        line2 = ax1.plot(t[t1:t2], Vhi[t1:t2])
         ax1.set_ylabel('Voltage')
         ax1.get_xaxis().set_visible(False)
+        ax1.legend(('LFP','Bandpass Filtered LFP'), loc = 'upper right')
         ax2.plot(t[t1:t2],amp[t1:t2])
         ax2.get_xaxis().set_visible(False)
         ax2.set_ylabel('Amplitude')
