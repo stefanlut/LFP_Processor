@@ -1,5 +1,5 @@
 # LFP_Processor
-A Graphical User Interface built on Python 3.0 and QT framework that can process Local Field Potential data.
+A Graphical User Interface built on Python 3.9 and QT framework that can process Local Field Potential data.
 
 The ideal file format to use with this is a MATLAB .mat file with two variables:  
 LFP - LFP Data  
