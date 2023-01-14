@@ -87,8 +87,9 @@ class Window(QtWidgets.QDialog):
             Wn = [35, 120]
         # LFP data
         data = sio.loadmat(fname)
-        LFP = data['LFP'][0] - np.mean(data['LFP'][0])
-        t = data['t'][0]
+        LFP = data['LFP'][0] - np.mean(data['LFP'][0]) # Recover LFP data and mean center LFP data
+        t = data['t'][0] # Recover time data
+
         try:
             if t1 == "" or t2 == "":
                 dlg = QtWidgets.QMessageBox()
@@ -96,8 +97,8 @@ class Window(QtWidgets.QDialog):
                 dlg.setText("No Time Interval Requested")
                 button = dlg.exec()
                 return
-            t1 = np.where(t== float(t1) )[0][0]
-            t2 = np.where(t==float(t2) )[0][0]
+            t1 = np.where(t== float(t1) )[0][0] # If this function fails
+            t2 = np.where(t==float(t2) )[0][0] # ... or if this function fails see except block
         except:
             dlg = QtWidgets.QMessageBox()
             dlg.setWindowTitle("Error")
@@ -106,18 +107,18 @@ class Window(QtWidgets.QDialog):
             return
             
         dt = t[1] - t[0]                     # Define the sampling interval,
-        Fs = 1/dt                       # Define sampling rate
+        Fs = 1/dt                       # Calculate sampling rate
         fNQ = Fs/ 2                     # ... and Nyquist frequency.
-        n = 100;                             # ... and filter order,
+        n = 100;                             # define filter order,
         b = signal.firwin(n, Wn, nyq=fNQ, pass_zero=False, window='hamming') #calculate filter coefficients
         Vhi = signal.filtfilt(b, 1, LFP)    # ... and apply it to the data.
-        X = signal.hilbert(Vhi)
-        phi = np.angle(X)     # Compute phase of low-freq signal
-        amp = abs(X)       # Compute amplitude of high-freq signal
+        X = signal.hilbert(Vhi)             # Calculate Hilbert Transform of filtered LFP data
+        phi = np.angle(X)     # Compute phase of filtered signal
+        amp = abs(X)       # Compute amplitude of filtered signal
         # clearing old figure
         self.figure.clear()
   
-        # create an axis
+        # create axes
         ax1 = self.figure.add_subplot(311)
         ax2 = self.figure.add_subplot(312)
         ax3 = self.figure.add_subplot(313)
@@ -140,12 +141,9 @@ class Window(QtWidgets.QDialog):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-  
     # creating a window object
     main = Window()
-      
     # showing the window
     main.show()
-  
     # loop
     sys.exit(app.exec_())
